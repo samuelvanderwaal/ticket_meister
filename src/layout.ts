@@ -8,6 +8,13 @@ const publicKey = (property = "publicKey") => {
 };
 
 /**
+ * Layout for a eventName string
+ */
+const string = (property = "string") => {
+  return BufferLayout.blob(32, property);
+};
+
+/**
  * Layout for a 64bit unsigned value
  */
 const uint64 = (property = "uint64") => {
@@ -17,11 +24,13 @@ const uint64 = (property = "uint64") => {
 export const EVENT_ACCOUNT_DATA_LAYOUT = BufferLayout.struct([
   BufferLayout.u8("isInitialized"),
   publicKey("initializerPubkey"),
-  uint64("expectedAmount")
+  string("eventName"),
+  uint64("maxTickets")
 ]);
 
 export interface EventLayout {
   isInitialized: number;
   initializerPubkey: Uint8Array;
+  eventName: Uint8Array;
   maxTickets: Uint8Array;
 }

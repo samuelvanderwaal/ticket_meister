@@ -19,13 +19,13 @@ impl Processor {
         accounts: &[AccountInfo],
         instruction_data: &[u8],
     ) -> ProgramResult {
+        msg!("PROCESSING");
         let instruction = EventInstruction::unpack(instruction_data)?;
 
         match instruction {
-            EventInstruction::CreateEvent { max_tickets } => {
+            EventInstruction::CreateEvent { max_tickets, name } => {
                 msg!("Instruction: CreateEvent");
-                msg!("Max tickets: {}", max_tickets);
-                Ok(())
+                Self::process_create_event(accounts, max_tickets, name, program_id)
             }
             EventInstruction::PurchaseTicket { purchaser_pubkey } => {
                 msg!("Instruction: PurchaseTicket");
@@ -38,6 +38,7 @@ impl Processor {
     fn process_create_event(
         accounts: &[AccountInfo],
         max_tickets: u64,
+        name: String,
         program_id: &Pubkey,
     ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
@@ -65,6 +66,7 @@ impl Processor {
         // Set new values.
         event_info.is_initialized = true;
         event_info.initializer_pubkey = *initializer.key;
+        event_info.name = name;
         event_info.max_tickets = max_tickets;
 
         // Serialize back into account data to update the account.
@@ -72,4 +74,13 @@ impl Processor {
 
         Ok(())
     }
+
+    // fn process_purchase_ticket(
+    //     accounts: &[AccountInfo],
+    //     max_tickets: u64,
+    //     program_id: &Pubkey,
+    // ) -> ProgramResult {
+    //     let account_info_iter = &mut accounts.iter();
+    //     Ok(())
+    // }
 }

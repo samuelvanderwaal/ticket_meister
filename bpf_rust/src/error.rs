@@ -10,6 +10,9 @@ pub enum EventError {
     /// Not Rent Exempt
     #[error("Not Rent Exempt")]
     NotRentExempt,
+    /// Invalid event name
+    #[error("Invalid Event Name")]
+    InvalidEventName,
 }
 
 impl From<EventError> for ProgramError {

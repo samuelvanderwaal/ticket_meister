@@ -13,3 +13,17 @@ $ cargo test
 $ cargo build-bpf
 $ cargo test-bpf
 ```
+
+### Deploy to local network
+```
+$ solana-test-validator
+```
+
+Start from genesis:
+```
+solana-test-validator -r
+```
+
+```
+solana program deploy /path/to/bpf_program_template.so
+```

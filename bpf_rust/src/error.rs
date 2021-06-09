@@ -13,6 +13,9 @@ pub enum EventError {
     /// Invalid event name
     #[error("Invalid Event Name")]
     InvalidEventName,
+    /// Out of tickets
+    #[error("Out of Tickets")]
+    OutOfTickets,
 }
 
 impl From<EventError> for ProgramError {

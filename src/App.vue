@@ -49,7 +49,7 @@
         </div>
         <div class="col">
           <input
-            v-model="maxTickets"
+            v-model.number="maxTickets"
             id="max-tickets"
             placeholder="max_tickets"
           />
@@ -90,6 +90,20 @@
         </div>
         <div class="col"></div>
       </div>
+      <div class="row">
+        <div class="col"></div>
+        <div class="col">
+          <label for="program-id">Event Account</label>
+        </div>
+        <div class="col">
+          <input
+            v-model="eventAccount"
+            id="event-account"
+            placeholder="event_account"
+          />
+        </div>
+        <div class="col"></div>
+      </div>
       <br />
       <div>
         <div class="col"></div>
@@ -108,16 +122,20 @@
 
 <script>
 import { createEvent } from "./createEvent";
+import { purchaseTicket } from "./purchaseTicket";
 
 export default {
   name: "App",
   components: {},
   data() {
     return {
+      ticketsPurchased: 0,
       maxTickets: 0,
       eventName: "",
+      eventAccount: "",
+      mintAccount: "",
       privateKey: "",
-      programId: "",
+      programId: "Gd8xxsjfLh927PLth7TAC2CaBL5MsR8Vnm5waeXZGvW5",
       status: ""
     };
   },
@@ -129,7 +147,9 @@ export default {
         isInitialized,
         initializerAccountPubkey,
         eventName,
-        maxTickets
+        ticketsPurchased,
+        maxTickets,
+        mintAccount
       } = await createEvent(
         this.privateKey,
         this.eventName,
@@ -141,18 +161,40 @@ export default {
         isInitialized,
         initializerAccountPubkey,
         eventName,
-        maxTickets
+        ticketsPurchased,
+        maxTickets,
+        mintAccount
       };
       console.log(
         eventAccountPubkey,
         isInitialized,
         initializerAccountPubkey,
         eventName,
-        maxTickets
+        ticketsPurchased,
+        maxTickets,
+        mintAccount
       );
     },
-    buyTicket() {
-      console.log("buying ticket!");
+    async purchaseTicket() {
+      let {
+        eventAccountPubkey,
+        isInitialized,
+        initializerAccountPubkey,
+        ticketsPurchased,
+        maxTickets
+      } = await purchaseTicket(
+        this.privateKey,
+        this.eventAccount,
+        this.programId
+      );
+
+      this.status = {
+        eventAccountPubkey,
+        isInitialized,
+        initializerAccountPubkey,
+        ticketsPurchased,
+        maxTickets
+      };
     }
   }
 };

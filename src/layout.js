@@ -20,7 +20,13 @@ const uint64 = (property = "uint64") => {
 export const EVENT_ACCOUNT_DATA_LAYOUT = BufferLayout.struct([
     BufferLayout.u8("isInitialized"),
     publicKey("initializerPubkey"),
+    uint64("ticketsPurchased"),
+    uint64("maxTickets"),
     string("eventName"),
-    uint64("maxTickets")
+    publicKey("mintAccount")
+]);
+export const MINT_ACCOUNT_DATA_LAYOUT = BufferLayout.struct([
+    BufferLayout.u8("isInitialized"),
+    publicKey("initializerPubkey")
 ]);
 //# sourceMappingURL=layout.js.map

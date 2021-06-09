@@ -18,9 +18,17 @@ pub enum EventInstruction {
         max_tickets: u64,
         name: String,
     },
-    PurchaseTicket {
-        purchaser_pubkey: Pubkey,
-    },
+    /// Creates NFT and transfers it to the caller providing max_tickets hasn't been reached.
+    /// 
+    /// Accounts expected:
+    ///
+    /// 0. `[signer]` The account of the person making the call.
+    /// 1. `[]` The event account.
+    /// 2. `[]` The token program
+    // PurchaseTicket {
+    //     purchaser_pubkey: Pubkey,
+    // },
+    PurchaseTicket,
 }
 
 impl EventInstruction {
@@ -34,14 +42,14 @@ impl EventInstruction {
             0 => {
                 msg!("CreateEvent instruction");
                 Self::CreateEvent {
-                    name: Self::unpack_name(rest)?,
                     max_tickets: Self::unpack_max_tickets(rest)?,
+                    name: Self::unpack_name(rest)?,
                 }
             }
             1 => {
                 msg!("PurchaseTicket instruction");
                 Self::PurchaseTicket {
-                    purchaser_pubkey: Self::unpack_purchaser(rest)?,
+                    // purchaser_pubkey: Self::unpack_purchaser(rest)?,
                 }
             }
             _ => return Err(InvalidInstruction.into()),
@@ -50,27 +58,27 @@ impl EventInstruction {
         Ok(result)
     }
 
+    fn unpack_max_tickets(input: &[u8]) -> Result<u64, ProgramError> {
+        msg!("Unpack max tickets: {:?}", input);
+        let max_tickets = input
+            .get(..8)
+            .and_then(|slice| slice.try_into().ok())
+            .map(u64::from_le_bytes)
+            .ok_or(InvalidInstruction)?;
+        msg!("Input now: {:?}", input);
+        Ok(max_tickets)
+    }
+
     fn unpack_name(input: &[u8]) -> Result<String, ProgramError> {
         msg!("Unpack name {:?}", input);
         let name = input
-            .get(..32)
+            .get(8..)
             .and_then(|slice| slice.try_into().ok())
             .map(str::from_utf8)
             .ok_or(InvalidInstruction)?
             .map_err(|_| InvalidInstruction)?;
         msg!("Unpack name finished: {}", name);
         Ok(name.into())
-    }
-
-    fn unpack_max_tickets(input: &[u8]) -> Result<u64, ProgramError> {
-        msg!("Unpack max tickets: {:?}", input);
-        let max_tickets = input
-            .get(32..)
-            .and_then(|slice| slice.try_into().ok())
-            .map(u64::from_le_bytes)
-            .ok_or(InvalidInstruction)?;
-        msg!("Input now: {:?}", input);
-        Ok(max_tickets)
     }
 
     fn unpack_purchaser(input: &[u8]) -> Result<Pubkey, ProgramError> {

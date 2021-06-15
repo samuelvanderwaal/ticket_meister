@@ -23,14 +23,13 @@ export const createEvent = async (
   maxTickets: number,
   eventProgramIdString: string
 ) => {
-  console.log(eventName);
   const privateKeyDecoded = privateKeyByteArray
     .split(",")
     .map(s => parseInt(s));
   const initializerAccount = new Account(privateKeyDecoded);
 
   const eventAccount = new Account();
-  const mintAccount = new Account();
+  // const mintAccount = new Account();
   const eventProgramId = new PublicKey(eventProgramIdString);
 
   // Create an instruction object for creating a new event account, owned by the event program.
@@ -45,17 +44,6 @@ export const createEvent = async (
     programId: eventProgramId
   });
 
-  const createMintAccountIx = SystemProgram.createAccount({
-    space: MINT_ACCOUNT_DATA_LAYOUT.span,
-    lamports: await connection.getMinimumBalanceForRentExemption(
-      MINT_ACCOUNT_DATA_LAYOUT.span,
-      "singleGossip"
-    ),
-    fromPubkey: initializerAccount.publicKey,
-    newAccountPubkey: mintAccount.publicKey,
-    programId: TOKEN_PROGRAM_ID
-  });
-
   const token = await Token.createMint(
     connection,
     initializerAccount,
@@ -64,13 +52,9 @@ export const createEvent = async (
     0,
     TOKEN_PROGRAM_ID
   );
-  // const createTokenMintIx = Token.createInitMintInstruction(
-  //   TOKEN_PROGRAM_ID,
-  //   mintAccount.publicKey,
-  //   0,
-  //   initializerAccount.publicKey,
-  //   null
-  // );
+
+  console.log("Mint Account: ");
+  console.log(token.publicKey.toBase58());
 
   let eventNameArray = Uint8Array.from(new Array(32).fill(0));
   // Truncate strings longer than 32 chars
@@ -99,12 +83,7 @@ export const createEvent = async (
     )
   });
 
-  const tx = new Transaction().add(
-    // createMintAccountIx,
-    // createTokenMintIx,
-    createEventAccountIx,
-    createEventIx
-  );
+  const tx = new Transaction().add(createEventAccountIx, createEventIx);
 
   try {
     let res = await connection.sendTransaction(
@@ -151,6 +130,6 @@ export const createEvent = async (
     ).toNumber(),
     maxTickets: new BN(decodedEventState.maxTickets, 10, "le").toNumber(),
     eventName: new TextDecoder().decode(decodedEventName),
-    mintAccount: mintAccount.publicKey.toBase58()
+    mintAccount: new PublicKey(decodedEventState.mintAccount).toBase58()
   };
 };

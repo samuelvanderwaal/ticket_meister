@@ -1,16 +1,15 @@
 import { Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Account, Connection, PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY, Transaction, TransactionInstruction } from "@solana/web3.js";
 import BN from "bn.js";
-import { EVENT_ACCOUNT_DATA_LAYOUT, MINT_ACCOUNT_DATA_LAYOUT } from "./layout";
+import { EVENT_ACCOUNT_DATA_LAYOUT } from "./layout";
 const connection = new Connection("http://localhost:8899", "singleGossip");
 export const createEvent = async (privateKeyByteArray, eventName, maxTickets, eventProgramIdString) => {
-    console.log(eventName);
     const privateKeyDecoded = privateKeyByteArray
         .split(",")
         .map(s => parseInt(s));
     const initializerAccount = new Account(privateKeyDecoded);
     const eventAccount = new Account();
-    const mintAccount = new Account();
+    // const mintAccount = new Account();
     const eventProgramId = new PublicKey(eventProgramIdString);
     // Create an instruction object for creating a new event account, owned by the event program.
     const createEventAccountIx = SystemProgram.createAccount({
@@ -20,14 +19,19 @@ export const createEvent = async (privateKeyByteArray, eventName, maxTickets, ev
         newAccountPubkey: eventAccount.publicKey,
         programId: eventProgramId
     });
-    const createMintAccountIx = SystemProgram.createAccount({
-        space: MINT_ACCOUNT_DATA_LAYOUT.span,
-        lamports: await connection.getMinimumBalanceForRentExemption(MINT_ACCOUNT_DATA_LAYOUT.span, "singleGossip"),
-        fromPubkey: initializerAccount.publicKey,
-        newAccountPubkey: mintAccount.publicKey,
-        programId: TOKEN_PROGRAM_ID
-    });
+    // const createMintAccountIx = SystemProgram.createAccount({
+    //   space: MINT_ACCOUNT_DATA_LAYOUT.span,
+    //   lamports: await connection.getMinimumBalanceForRentExemption(
+    //     MINT_ACCOUNT_DATA_LAYOUT.span,
+    //     "singleGossip"
+    //   ),
+    //   fromPubkey: initializerAccount.publicKey,
+    //   newAccountPubkey: mintAccount.publicKey,
+    //   programId: TOKEN_PROGRAM_ID
+    // });
     const token = await Token.createMint(connection, initializerAccount, initializerAccount.publicKey, null, 0, TOKEN_PROGRAM_ID);
+    console.log("Mint Account: ");
+    console.log(token.publicKey.toBase58());
     // const createTokenMintIx = Token.createInitMintInstruction(
     //   TOKEN_PROGRAM_ID,
     //   mintAccount.publicKey,
@@ -83,7 +87,7 @@ export const createEvent = async (privateKeyByteArray, eventName, maxTickets, ev
         ticketsPurchased: new BN(decodedEventState.ticketsPurchased, 10, "le").toNumber(),
         maxTickets: new BN(decodedEventState.maxTickets, 10, "le").toNumber(),
         eventName: new TextDecoder().decode(decodedEventName),
-        mintAccount: mintAccount.publicKey.toBase58()
+        mintAccount: new PublicKey(decodedEventState.mintAccount).toBase58()
     };
 };
 //# sourceMappingURL=createEvent.js.map

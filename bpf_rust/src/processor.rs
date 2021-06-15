@@ -61,30 +61,6 @@ impl Processor {
             return Err(EventError::NotRentExempt.into());
         }
 
-        let token_program = next_account_info(account_info_iter)?;
-
-        // let mint_token_ix = initialize_mint(
-        //     token_program.key,
-        //     mint_account.key,
-        //     initializer.key,
-        //     None,
-        //     0,
-        // )?;
-
-        // msg!("Before invoke mint_token_ix.");
-
-        // // // Create mint token account
-        // invoke(
-        //     &mint_token_ix,
-        //     &[
-        //         mint_account.clone(),
-        //         initializer.clone(),
-        //         token_program.clone(),
-        //     ],
-        // )?;
-
-        // msg!("After invoke mint_token_ix.");
-
         // Deserialize current event account data into a Rust struct.
         let mut event_info = Event::unpack_unchecked(&event_account.data.borrow())?;
 

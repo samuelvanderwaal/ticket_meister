@@ -71,8 +71,7 @@ export const createEvent = async (
       },
       { pubkey: eventAccount.publicKey, isSigner: false, isWritable: true },
       { pubkey: token.publicKey, isSigner: false, isWritable: true },
-      { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
-      { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }
+      { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false }
     ],
     data: Buffer.from(
       Uint8Array.of(

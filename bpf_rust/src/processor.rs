@@ -8,7 +8,7 @@ use solana_program::{
     pubkey::Pubkey,
     sysvar::{rent::Rent, Sysvar},
 };
-use spl_token::instruction::initialize_mint;
+use spl_associated_token_account::{create_associated_token_account, get_associated_token_address};
 
 use crate::error::EventError;
 use crate::instruction::EventInstruction;
@@ -96,11 +96,16 @@ impl Processor {
         }
 
         let event_account = next_account_info(account_info_iter)?;
+        let associated_token_account = next_account_info(account_info_iter)?;
+        let mint_account = next_account_info(account_info_iter)?;
 
         let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
         if !rent.is_exempt(event_account.lamports(), event_account.data_len()) {
             return Err(EventError::NotRentExempt.into());
         }
+
+        let token_program_account = next_account_info(account_info_iter)?;
+        let system_program_account = next_account_info(account_info_iter)?;
 
         // Deserialize current event account data into a Rust struct.
         let mut event_info = Event::unpack_unchecked(&event_account.data.borrow())?;
@@ -116,7 +121,29 @@ impl Processor {
 
         // Increment tickets_issued;
         event_info.tickets_issued += 1;
+
         // Issue ticket
+        let create_associated_account_ix = create_associated_token_account(
+            initializer.key,
+            initializer.key,
+            &event_info.mint_account
+        );
+
+        // let associated_token_address = get_associated_token_address(initializer.key, &event_info.mint_account);
+
+        invoke(
+            &create_associated_account_ix,
+            &[
+                initializer.clone(),
+                associated_token_account.clone(),
+                initializer.clone(),
+                mint_account.clone(),
+                system_program_account.clone(),
+                token_program_account.clone(),
+            ]
+        )?;
+
+
 
         msg!("Event Info: {:?}", event_info);
         // Serialize back into account data to update the account.

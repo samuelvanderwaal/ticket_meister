@@ -19,26 +19,9 @@ export const createEvent = async (privateKeyByteArray, eventName, maxTickets, ev
         newAccountPubkey: eventAccount.publicKey,
         programId: eventProgramId
     });
-    // const createMintAccountIx = SystemProgram.createAccount({
-    //   space: MINT_ACCOUNT_DATA_LAYOUT.span,
-    //   lamports: await connection.getMinimumBalanceForRentExemption(
-    //     MINT_ACCOUNT_DATA_LAYOUT.span,
-    //     "singleGossip"
-    //   ),
-    //   fromPubkey: initializerAccount.publicKey,
-    //   newAccountPubkey: mintAccount.publicKey,
-    //   programId: TOKEN_PROGRAM_ID
-    // });
     const token = await Token.createMint(connection, initializerAccount, initializerAccount.publicKey, null, 0, TOKEN_PROGRAM_ID);
     console.log("Mint Account: ");
     console.log(token.publicKey.toBase58());
-    // const createTokenMintIx = Token.createInitMintInstruction(
-    //   TOKEN_PROGRAM_ID,
-    //   mintAccount.publicKey,
-    //   0,
-    //   initializerAccount.publicKey,
-    //   null
-    // );
     let eventNameArray = Uint8Array.from(new Array(32).fill(0));
     // Truncate strings longer than 32 chars
     new TextEncoder().encodeInto(eventName.slice(0, 32), eventNameArray);
@@ -53,15 +36,11 @@ export const createEvent = async (privateKeyByteArray, eventName, maxTickets, ev
             },
             { pubkey: eventAccount.publicKey, isSigner: false, isWritable: true },
             { pubkey: token.publicKey, isSigner: false, isWritable: true },
-            { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }
+            { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false }
         ],
         data: Buffer.from(Uint8Array.of(0, ...new BN(maxTickets).toArray("le", 8), ...eventNameArray))
     });
-    const tx = new Transaction().add(
-    // createMintAccountIx,
-    // createTokenMintIx,
-    createEventAccountIx, createEventIx);
+    const tx = new Transaction().add(createEventAccountIx, createEventIx);
     try {
         let res = await connection.sendTransaction(tx, [initializerAccount, eventAccount], {
             skipPreflight: false,
